@@ -145,16 +145,31 @@
 <body>
     <div class="editor-container">
         <div class="toolbar">
-            <button data-tag="T" title="Title [T]...[/T]">H1</button>
-            <button data-tag="S" title="Subtitle [S]...[/S]">H2</button>
+            <button data-tag="T" title="Title [T]...[/T]">Old H1</button>
+            <button data-tag="S" title="Subtitle [S]...[/S]">Old H2</button>
             <button data-tag="P" title="Paragraph [P]...[/P]">P</button>
             <button data-tag="Q" title="Quote [Q]...[/Q]">Quote</button>
             <button data-tag="B" title="Bold [B]...[/B]">B</button>
             <button data-tag="I" title="Italic [I]...[/I]">I</button>
+            <button data-tag="H1" title="Heading 1 [H1]...[/H1]">H1</button>
+            <button data-tag="H2" title="Heading 2 [H2]...[/H2]">H2</button>
+            <button data-tag="H3" title="Heading 3 [H3]...[/H3]">H3</button>
+            <button data-tag="H4" title="Heading 4 [H4]...[/H4]">H4</button>
+            <button data-tag="H5" title="Heading 5 [H5]...[/H5]">H5</button>
+            <button data-tag="H6" title="Heading 6 [H6]...[/H6]">H6</button>
             <button data-tag="LINK" title="Link [LINK(URL){TEXT}]">Link</button>
             <button data-tag="IMG" title="Image [IMG(URL){ALT}]">Image</button>
+            <button data-tag="BANNER" title="Banner [BANNER(URL){ALT}]">Banner</button>
+            <button data-tag="LOC" title="Localized Block [LOC(lang)]...[/LOC]">LOC</button>
+            <button data-tag="TIMESTAMP" title="Timestamp [TIMESTAMP(ISO){FORMAT}]">Timestamp</button>
+            <button data-tag="AUTHOR" title="Author [AUTHOR(Name){URL}]">Author</button>
+            <button data-tag="COLOR" title="Color [COLOR(fg,bg)]...[/COLOR]">Color</button>
             <button data-tag="BR" title="Line Break [BR/]">BR</button>
             <button data-tag="RAW" title="Raw Text [RAW]...[/RAW]">Raw</button>
+            <button data-tag="KEYWORDS" title="Keywords [KEYWORDS]...[/KEYWORDS]">Keywords</button>
+            <button data-tag="CATEGORY" title="Category [CATEGORY]...[/CATEGORY]">Category</button>
+            <button data-tag="SLUG" title="Slug [SLUG]...[/SLUG]">Slug</button>
+            <button data-tag="CONFIG" title="Config [CONFIG](key){value}[/CONFIG]">Config</button>
         </div>
 
         <textarea id="fttInput" placeholder="Start writing your FTT content here..."></textarea>
@@ -181,6 +196,10 @@
                 let suffix = '';
                 let content = selectedText;
                 let cursorOffset = 0;
+                let fullInsertion = '';
+                const needsPrompt = ['LINK', 'IMG', 'BANNER', 'LOC', 'TIMESTAMP', 'AUTHOR', 'COLOR', 'CONFIG'];
+                const isPaired = !['LINK', 'IMG', 'BANNER', 'TIMESTAMP', 'AUTHOR', 'BR', 'CONFIG'].includes(tagType); // Config is special, handled below
+                const isSelfClosingStyle = ['IMG', 'BANNER', 'TIMESTAMP', 'AUTHOR', 'BR'];
 
                 switch (tagType) {
                     case 'T':
@@ -189,32 +208,94 @@
                     case 'Q':
                     case 'B':
                     case 'I':
+                    case 'H1':
+                    case 'H2':
+                    case 'H3':
+                    case 'H4':
+                    case 'H5':
+                    case 'H6':
+                    case 'KEYWORDS':
+                    case 'CATEGORY':
+                    case 'SLUG':
                     case 'RAW':
                         prefix = `[${tagType}]`;
                         suffix = `[/${tagType}]`;
-                        cursorOffset = prefix.length;
+                        break;
+
+                    case 'LOC':
+                        const lang = prompt('Enter language code (e.g., en-US):', 'en-US');
+                        if (!lang) return;
+                        prefix = `[LOC(${lang})]`;
+                        suffix = `[/LOC]`;
+                        break;
+
+                    case 'COLOR':
+                        const colors = prompt('Enter color(s) (e.g., red OR white,navy):', 'black');
+                        if (!colors) return;
+                        prefix = `[COLOR(${colors})]`;
+                        suffix = `[/COLOR]`;
                         break;
 
                     case 'LINK':
-                        const linkText = selectedText || '';
-                        prefix = `[LINK(`;
-                        suffix = `){${linkText}}]`;
+                        const urlLink = prompt('Enter Link URL:', selectedText.startsWith('http') ? selectedText : 'https://');
+                        if (!urlLink) return;
+                        const textLink = prompt('Enter Link Text (leave blank to use URL):', selectedText.startsWith('http') ? '' : selectedText);
+                        prefix = `[LINK(${urlLink}){${textLink}}]`;
+                        suffix = '';
                         content = '';
-                        cursorOffset = prefix.length;
                         break;
 
                     case 'IMG':
-                        prefix = `[IMG(`;
-                        suffix = `){}]`;
+                        const urlImg = prompt('Enter Image URL:', 'https://');
+                        if (!urlImg) return;
+                        const altImg = prompt('Enter Image Alt Text:', 'Image description');
+                        prefix = `[IMG(${urlImg}){${altImg}}]`;
+                        suffix = '';
                         content = '';
-                        cursorOffset = prefix.length;
+                        break;
+
+                    case 'BANNER':
+                        const urlBanner = prompt('Enter Banner URL:', 'https://');
+                        if (!urlBanner) return;
+                        const altBanner = prompt('Enter Banner Alt Text:', 'Banner description');
+                        prefix = `[BANNER(${urlBanner}){${altBanner}}]`;
+                        suffix = '';
+                        content = '';
+                        break;
+
+                    case 'TIMESTAMP':
+                        const iso = prompt('Enter ISO Timestamp (YYYY-MM-DDTHH:mm:ssZ):', new Date().toISOString().split('.')[0]+"Z");
+                        if (!iso) return;
+                        const format = prompt('Enter optional Format String (leave blank if none):', '');
+                        prefix = `[TIMESTAMP(${iso})${format ? '{' + format + '}' : ''}]`;
+                        suffix = '';
+                        content = '';
+                        break;
+
+                    case 'AUTHOR':
+                        const name = prompt('Enter Author Name:', 'Author Name');
+                        if (!name) return;
+                        const urlAuthor = prompt('Enter optional Author URL (leave blank if none):', '');
+                        prefix = `[AUTHOR(${name})${urlAuthor ? '{' + urlAuthor + '}' : ''}]`;
+                        suffix = '';
+                        content = '';
+                        break;
+
+                    case 'CONFIG':
+                        const key = prompt('Enter Config Key (e.g., lang, theme):', 'key');
+                        if (!key) return;
+                        const value = prompt(`Enter value for ${key}:`, 'value');
+                        if (value === null) return;
+                        // Config is defined as paired in the parser
+                        prefix = `[CONFIG](${key}){${value}}`;
+                        suffix = `[/CONFIG]`;
+                        content = ''; // Config tags typically don't wrap content
                         break;
 
                     case 'BR':
                         prefix = `[BR/]`;
                         suffix = '';
                         content = '';
-                        cursorOffset = prefix.length;
                         break;
 
                     default:
@@ -222,16 +303,28 @@
                         return;
                 }
 
-                const insertion = prefix + content + suffix;
-                textarea.value = textBefore + insertion + textAfter;
+                // Construct the final insertion string
+                fullInsertion = prefix + content + suffix;
 
+                // Insert into textarea
+                textarea.value = textBefore + fullInsertion + textAfter;
                 textarea.focus();
 
-                if (selectedText && ['T', 'S', 'P', 'Q', 'B', 'I', 'RAW'].includes(tagType)) {
-                    textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+                // Set cursor position
+                if (content && isPaired) {
+                    // Place cursor inside the tags if there was selected text
+                    textarea.setSelectionRange(start + prefix.length, start + prefix.length + content.length);
+                } else if (!content && isPaired) {
+                     // Place cursor inside the empty tags
+                     textarea.setSelectionRange(start + prefix.length, start + prefix.length);
+                } else if (needsPrompt || isSelfClosingStyle) {
+                    // Place cursor after the inserted tag
+                     textarea.setSelectionRange(start + fullInsertion.length, start + fullInsertion.length);
                 } else {
-                    textarea.setSelectionRange(start + cursorOffset, start + cursorOffset);
+                    // Default: place cursor after insertion
+                    textarea.setSelectionRange(start + fullInsertion.length, start + fullInsertion.length);
                 }
+
             };
 
             toolbar.addEventListener('click', (event) => {

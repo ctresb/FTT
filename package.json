@@ -1,0 +1,13 @@
+{
+  "name": "flat-text-tags",
+  "version": "1.0.0",
+  "description": "A lightweight text-to-HTML parser using flat BBCode-style tags",
+  "main": "core/ftt.js",
+  "type": "module",
+  "keywords": ["text parser", "bbcode", "html", "lightweight", "markdown alternative"],
+  "author": "João Davi S. N.",
+  "license": "MIT",
+  "files": [
+    "core"
+  ]
+}

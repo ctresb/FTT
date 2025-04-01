@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTT Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <style>
+        :root {
+            --background-color: #F3F3F3;
+            --primary-color: #111827;
+            --accent-color: #4F46E5;
+            --accent-light: #C7D2FE;
+            --raw-background: #E5E7EB;
+            --border-color: var(--primary-color);
+            --border-width: 2px;
+            --shadow-offset: 4px;
+            --font-main: "Space Grotesk", sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .editor-container {
+            width: 100%;
+            background-color: #FFFFFF;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 15px;
+            border-bottom: var(--border-width) solid var(--border-color);
+            background-color: #fff;
+            flex-shrink: 0;
+        }
+
+        .toolbar button {
+            padding: 8px 12px;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            border: var(--border-width) solid var(--border-color);
+            cursor: pointer;
+            font-weight: 700;
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: calc(var(--shadow-offset) / 2) calc(var(--shadow-offset) / 2) 0px var(--border-color);
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background-color 0.1s ease;
+        }
+
+        .toolbar button:hover {
+            background-color: var(--accent-light);
+            transform: translate(1px, 1px);
+            box-shadow: calc(var(--shadow-offset) / 2 - 1px) calc(var(--shadow-offset) / 2 - 1px) 0px var(--border-color);
+        }
+
+        .toolbar button:active {
+            background-color: var(--accent-color);
+            color: white;
+            transform: translate(calc(var(--shadow-offset) / 2), calc(var(--shadow-offset) / 2));
+            box-shadow: none;
+        }
+
+        textarea#fttInput {
+            flex-grow: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            line-height: 1.7;
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+        }
+
+        .action-bar {
+            padding: 15px;
+            border-top: var(--border-width) solid var(--border-color);
+            background-color: #fff;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        #generateButton {
+            padding: 10px 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+            cursor: pointer;
+            font-weight: 700;
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        }
+
+        #generateButton:hover {
+            transform: translate(2px, 2px);
+            box-shadow: calc(var(--shadow-offset) - 2px) calc(var(--shadow-offset) - 2px) 0px var(--border-color);
+        }
+
+        #generateButton:active {
+            transform: translate(var(--shadow-offset), var(--shadow-offset));
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="toolbar">
+            <button data-tag="T" title="Title [T]...[/T]">H1</button>
+            <button data-tag="S" title="Subtitle [S]...[/S]">H2</button>
+            <button data-tag="P" title="Paragraph [P]...[/P]">P</button>
+            <button data-tag="Q" title="Quote [Q]...[/Q]">Quote</button>
+            <button data-tag="B" title="Bold [B]...[/B]">B</button>
+            <button data-tag="I" title="Italic [I]...[/I]">I</button>
+            <button data-tag="LINK" title="Link [LINK(URL){TEXT}]">Link</button>
+            <button data-tag="IMG" title="Image [IMG(URL){ALT}]">Image</button>
+            <button data-tag="BR" title="Line Break [BR/]">BR</button>
+            <button data-tag="RAW" title="Raw Text [RAW]...[/RAW]">Raw</button>
+        </div>
+
+        <textarea id="fttInput" placeholder="Start writing your FTT content here..."></textarea>
+
+        <div class="action-bar">
+            <button id="generateButton">Copy FTT</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toolbar = document.querySelector('.toolbar');
+            const textarea = document.getElementById('fttInput');
+            const generateButton = document.getElementById('generateButton');
+
+            const insertTag = (tagType) => {
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const selectedText = textarea.value.substring(start, end);
+                const textBefore = textarea.value.substring(0, start);
+                const textAfter = textarea.value.substring(end);
+
+                let prefix = '';
+                let suffix = '';
+                let content = selectedText;
+                let cursorOffset = 0;
+
+                switch (tagType) {
+                    case 'T':
+                    case 'S':
+                    case 'P':
+                    case 'Q':
+                    case 'B':
+                    case 'I':
+                    case 'RAW':
+                        prefix = `[${tagType}]`;
+                        suffix = `[/${tagType}]`;
+                        cursorOffset = prefix.length;
+                        break;
+
+                    case 'LINK':
+                        const linkText = selectedText || '';
+                        prefix = `[LINK(`;
+                        suffix = `){${linkText}}]`;
+                        content = '';
+                        cursorOffset = prefix.length;
+                        break;
+
+                    case 'IMG':
+                        prefix = `[IMG(`;
+                        suffix = `){}]`;
+                        content = '';
+                        cursorOffset = prefix.length;
+                        break;
+
+                    case 'BR':
+                        prefix = `[BR/]`;
+                        suffix = '';
+                        content = '';
+                        cursorOffset = prefix.length;
+                        break;
+
+                    default:
+                        console.warn('Unknown tag type:', tagType);
+                        return;
+                }
+
+                const insertion = prefix + content + suffix;
+                textarea.value = textBefore + insertion + textAfter;
+
+                textarea.focus();
+
+                if (selectedText && ['T', 'S', 'P', 'Q', 'B', 'I', 'RAW'].includes(tagType)) {
+                    textarea.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+                } else {
+                    textarea.setSelectionRange(start + cursorOffset, start + cursorOffset);
+                }
+            };
+
+            toolbar.addEventListener('click', (event) => {
+                const button = event.target.closest('button');
+                if (button && button.dataset.tag) {
+                    insertTag(button.dataset.tag);
+                }
+            });
+
+            generateButton.addEventListener('click', () => {
+                const fttContent = textarea.value;
+                if (!fttContent) {
+                    alert('Nothing to copy!');
+                    return;
+                }
+                navigator.clipboard.writeText(fttContent).then(() => {
+                    alert('FTT copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy FTT: ', err);
+                    alert('Failed to copy FTT. See console for details.');
+                });
+            });
+
+        });
+    </script>
+
+</body>
+</html>

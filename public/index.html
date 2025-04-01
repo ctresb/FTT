@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTT Editor and Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <style>
+        :root {
+            --background-color: #F3F3F3;
+            --primary-color: #111827;
+            --accent-color: #4F46E5;
+            --accent-light: #C7D2FE;
+            --raw-background: #E5E7EB;
+            --border-color: var(--primary-color);
+            --border-width: 2px;
+            --shadow-offset: 5px;
+            --font-main: "Space Grotesk", sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            padding: 30px;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+        }
+
+        .main-title {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-title img {
+            height: 40px;
+            width: auto;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+
+        .input-area,
+        .output-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 800px;
+            padding: 15px;
+            border: var(--border-width) solid var(--border-color);
+            font-family: var(--font-main);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            resize: none;
+        }
+
+        textarea:focus {
+            outline: var(--border-width) solid var(--accent-color);
+            box-shadow: 0 0 0 var(--shadow-offset) var(--accent-light);
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: var(--accent-color);
+            color: white;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+            cursor: pointer;
+            align-self: flex-end;
+            font-weight: 700;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        }
+
+        button:hover {
+            transform: translate(2px, 2px);
+            box-shadow: calc(var(--shadow-offset) - 2px) calc(var(--shadow-offset) - 2px) 0px var(--border-color);
+        }
+
+        button:active {
+            transform: translate(var(--shadow-offset), var(--shadow-offset));
+            box-shadow: none;
+        }
+
+        #output {
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            min-height: 400px;
+            overflow-wrap: break-word;
+            font-size: 1rem;
+            padding-bottom: 1px;
+        }
+
+        #output>*:first-child {
+            margin-top: 0;
+        }
+
+        #output>*:last-child {
+            margin-bottom: 0;
+        }
+
+        .ftt-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            padding-bottom: 0.4em;
+            margin-top: 0;
+            margin-bottom: 0.6em;
+            line-height: 1.2;
+        }
+
+        .ftt-subtitle {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-top: 1em;
+            margin-bottom: 0.8em;
+            color: var(--primary-color);
+            opacity: 0.85;
+        }
+
+        .ftt-paragraph {
+            margin-top: 0;
+            margin-bottom: 1.2em;
+            color: var(--primary-color);
+            line-height: 1.7;
+        }
+
+        .ftt-quote {
+            border-left: 5px solid var(--border-color);
+            padding-left: 1.5em;
+            margin: 1.5em 0;
+            font-style: normal;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            opacity: 0.9;
+        }
+
+        .ftt-quote p {
+            margin-bottom: 0.5em;
+        }
+
+        .ftt-quote p:last-child {
+            margin-bottom: 0;
+        }
+
+
+        .ftt-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1.5em 0;
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+        }
+
+        .ftt-bold {
+            font-weight: 700;
+        }
+
+        .ftt-italic {
+            font-style: italic;
+        }
+
+        .ftt-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 700;
+            background-color: var(--accent-light);
+            padding: 0.1em 0.3em;
+            border-bottom: var(--border-width) solid var(--accent-color);
+            transition: background-color 0.2s ease, color 0.2s ease, border-bottom-color 0.2s ease;
+            border-radius: 2px;
+        }
+
+        .ftt-link:hover {
+            color: white;
+            background-color: var(--accent-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .ftt-raw {
+            display: block;
+            background-color: var(--raw-background);
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+            padding: 15px;
+            margin: 1.5em 0;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            white-space: pre-wrap;
+            overflow-x: auto;
+            word-break: break-word;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 class="main-title">
+        <img src="./ftt.svg" alt="FTT Logo" />
+        Editor and Preview
+    </h1>
+
+    <div class="container">
+        <div class="input-area">
+            <h2>Input (FTT Syntax)</h2>
+            <textarea id="inputText" placeholder="Start writing your FTT content here..."></textarea>
+            <button id="convertButton">Convert</button>
+        </div>
+
+        <div class="output-area">
+            <h2>Output (HTML)</h2>
+            <div id="output">
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { FTT } from '../core/ftt.js';
+        document.addEventListener('DOMContentLoaded', () => {
+            const ftt = new FTT();
+            const inputText = document.getElementById('inputText');
+            const outputDiv = document.getElementById('output');
+            const convertButton = document.getElementById('convertButton');
+
+            const convertText = () => {
+                const plainText = inputText.value;
+                const htmlResult = ftt.convertToHtml(plainText);
+                outputDiv.innerHTML = htmlResult;
+            };
+
+            convertButton.addEventListener('click', convertText);
+
+            if (inputText.value) {
+                convertText();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

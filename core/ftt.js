@@ -19,7 +19,7 @@ class FttConfig {
                 SLUG: { metadata: true },
                 CONFIG: { metadata: true },
                 LOC: { metadata: true, specialHandling: true },
-                COLOR: { specialHandling: true } // Indicates custom processing needed
+                COLOR: { specialHandling: true }
             },
             imgClass: 'ftt-image',
             linkClass: 'ftt-link',
@@ -207,7 +207,7 @@ class FTT {
 
         for (const key in metadataTags) {
             processedText = processedText.replace(metadataTags[key], (match, content) => {
-                if (this.metadata[key] === null) { // Store only the first match for simple metadata
+                if (this.metadata[key] === null) {
                    this.metadata[key] = String(content).trim();
                 } else if (this.config.getSetting('enableWarnings')) {
                    console.warn(`FTT Engine: Multiple [${key}] tags found. Only the first one was used.`);
@@ -247,14 +247,84 @@ class FTT {
         });
     }
 
-     _processTimestamp(text) {
+    _processTimestamp(text) {
         const timestampClass = this.config.getSetting('timestampClass');
+
+        const formatTimestamp = (isoString, formatPattern) => {
+            isoString = String(isoString).trim();
+            formatPattern = String(formatPattern).trim();
+
+            if (isoString.length < 16 || isoString.charAt(4) !== '-' || isoString.charAt(7) !== '-' || isoString.charAt(10) !== 'T' || isoString.charAt(13) !== ':') {
+                 if (this.config.getSetting('enableWarnings')) {
+                     console.warn(`FTT Engine: Invalid or incomplete ISO timestamp format provided for formatting: "${isoString}"`);
+                 }
+                return isoString;
+            }
+
+            const parts = {
+                yyyy: isoString.substring(0, 4),
+                MM: isoString.substring(5, 7),
+                dd: isoString.substring(8, 10),
+                hh: isoString.substring(11, 13),
+                mm: isoString.substring(14, 16),
+                yy: isoString.substring(2, 4)
+            };
+
+            let result = '';
+            let i = 0;
+            const len = formatPattern.length;
+
+            while (i < len) {
+                let consumed = 0;
+                if (formatPattern.substring(i, i + 4) === 'yyyy') {
+                    result += parts.yyyy;
+                    consumed = 4;
+                } else if (formatPattern.substring(i, i + 2) === 'yy') {
+                    result += parts.yy;
+                    consumed = 2;
+                } else if (formatPattern.substring(i, i + 2) === 'MM') {
+                    result += parts.MM;
+                    consumed = 2;
+                } else if (formatPattern.substring(i, i + 2) === 'dd') {
+                    result += parts.dd;
+                    consumed = 2;
+                } else if (formatPattern.substring(i, i + 2) === 'hh') {
+                    result += parts.hh;
+                    consumed = 2;
+                } else if (formatPattern.substring(i, i + 2) === 'mm') {
+                    result += parts.mm;
+                    consumed = 2;
+                }
+
+                if (consumed > 0) {
+                    i += consumed;
+                } else {
+                    result += formatPattern[i];
+                    i += 1;
+                }
+            }
+            return result;
+        };
+
         return text.replace(this.regex.timestampRegex, (match, isoString, format) => {
             const sanitizedIsoString = this.sanitizer.escapeHtml(isoString);
-            const displayContent = sanitizedIsoString;
+            let displayContent = sanitizedIsoString;
+
+            if (format && typeof format === 'string' && format.trim() !== '') {
+                 try {
+                     displayContent = formatTimestamp(isoString, format);
+                 } catch (e) {
+                     if (this.config.getSetting('enableWarnings')) {
+                         console.warn(`FTT Engine: Error formatting timestamp "${isoString}" with format "${format}". Error: ${e instanceof Error ? e.message : String(e)}`);
+                     }
+                     displayContent = sanitizedIsoString;
+                 }
+            }
+
             return `<time class="${timestampClass}" datetime="${sanitizedIsoString}">${displayContent}</time>`;
         });
     }
+
 
     _processAuthor(text) {
         const authorClass = this.config.getSetting('authorClass');
@@ -272,7 +342,7 @@ class FTT {
     _processColor(text) {
         let changed = true;
         let iteration = 0;
-        const maxColorIterations = this.maxIterations; // Use general max iterations for safety
+        const maxColorIterations = this.maxIterations;
 
         while (changed && iteration < maxColorIterations) {
             changed = false;
@@ -300,9 +370,6 @@ class FTT {
     }
 
     _processLoc(text) {
-        // Process LOC tags conditionally based on currentLang
-        // This needs to run iteratively or carefully to handle nested LOCs if ever needed,
-        // but current design implies LOC blocks are distinct sections.
         let changed = true;
         let iteration = 0;
         const maxLocIterations = this.maxIterations;
@@ -311,13 +378,11 @@ class FTT {
             changed = false;
             iteration++;
             text = text.replace(this.regex.locRegex, (match, langCode, content) => {
-                 changed = true; // Replacement attempt occurred
+                 changed = true;
                  const cleanLangCode = String(langCode).trim().toLowerCase();
                  if (cleanLangCode === this.currentLang.toLowerCase()) {
-                    // Process content if language matches
                     return this._processContentTags(content);
                  } else {
-                    // Remove if language doesn't match
                     return '';
                  }
             });
@@ -335,12 +400,12 @@ class FTT {
         const localPairedTagRegex = this.regex.pairedTagRegex;
 
         if (!localPairedTagRegex || localPairedTagRegex.source === 'a^') {
-             return text; // No paired tags configured
+             return text;
         }
 
         do {
             previousHtml = text;
-            localPairedTagRegex.lastIndex = 0; // Reset for global regex
+            localPairedTagRegex.lastIndex = 0;
 
             text = text.replace(localPairedTagRegex, (match, tag, content) => {
                 const tagConfig = this.config.getTagConfig(tag);
@@ -350,8 +415,6 @@ class FTT {
 
                 const htmlTag = tagConfig.tag;
                 const className = tagConfig.class ? ` class="${tagConfig.class}"` : '';
-                // The content inside standard paired tags should have already been processed
-                // by prior steps or will be processed in subsequent iterations if nested.
                 return `<${htmlTag}${className}>${content}</${htmlTag}>`;
             });
 
@@ -379,9 +442,7 @@ class FTT {
         processedText = this._processLinks(processedText);
         processedText = this._processTimestamp(processedText);
         processedText = this._processAuthor(processedText);
-        processedText = this._processColor(processedText); // Handles nested color
-        // LOC needs careful handling - generally processed top-level, but recursive calls might need it
-        // processedText = this._processLoc(processedText); // Avoid infinite loops, handle LOC at higher level
+        processedText = this._processColor(processedText);
         processedText = this._processPairedTags(processedText);
         processedText = this._processLineBreaks(processedText);
         return processedText;
@@ -400,14 +461,10 @@ class FTT {
         html = this.rawHandler.extract(html, this.regex.rawRegex);
         html = this._extractConfigAndMetadata(html);
 
-        // Process content tags. Order can matter.
-        // Process LOC first to select the right content block.
         html = this._processLoc(html);
 
-        // Process other tags on the potentially modified content
         html = this._processContentTags(html);
 
-        // Restore RAW content last
         html = this.rawHandler.restore(html, this.config.getSetting('rawClass'), this.sanitizer);
 
         return html.trim();

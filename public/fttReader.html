@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTT Content Reader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #FFFFFF;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --accent-color: #3B82F6;
+            --accent-light: #DBEAFE;
+            --code-background: #F3F4F6;
+            --quote-background: #F9FAFB;
+            --quote-border: var(--accent-color);
+            --border-subtle: #E5E7EB;
+            --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --content-max-width: 720px;
+            --border-radius: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.7;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #ftt-render-output {
+        }
+
+        .ftt-content-wrapper {
+             max-width: var(--content-max-width);
+             margin: 0 auto;
+             padding: 2rem 1rem;
+        }
+        #ftt-render-output > * {
+            margin-bottom: 1.25em;
+        }
+         #ftt-render-output > *:last-child {
+             margin-bottom: 0;
+        }
+
+
+        .ftt-banner {
+            width: 100%;
+            max-width: none;
+            height: auto;
+            max-height: 400px;
+            display: block;
+            margin: 0 0 2.5em 0;
+            object-fit: cover;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        #ftt-render-output > *:not(.ftt-banner) {
+             max-width: var(--content-max-width);
+             margin-left: auto;
+             margin-right: auto;
+             padding-left: 1rem;
+             padding-right: 1rem;
+        }
+        #ftt-render-output > *:not(.ftt-banner) {
+        }
+
+
+        .ftt-title, h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-main);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.3;
+            margin-top: 1.8em;
+            margin-bottom: 0.8em;
+        }
+        .ftt-title { font-size: 2.25rem; margin-top: 0; }
+        h1:not(.ftt-title) { font-size: 1.875rem; }
+        .ftt-subtitle { font-size: 1.5rem; font-weight: 500; color: var(--text-secondary); margin-top: 0.5em; margin-bottom: 1em;}
+        h2:not(.ftt-subtitle) { font-size: 1.5rem; }
+        h3 { font-size: 1.25rem; }
+        h4 { font-size: 1.125rem; color: var(--text-secondary); }
+        h5 { font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+        h6 { font-size: 0.875rem; font-style: italic; color: var(--text-secondary); }
+
+        .ftt-paragraph, p {
+            margin-top: 0;
+            margin-bottom: 1.25em;
+            color: var(--text-primary);
+        }
+
+        .ftt-quote {
+            border-left: 3px solid var(--quote-border);
+            padding: 1em 1.5em;
+            margin: 2em 0;
+            font-style: normal;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            background-color: var(--quote-background);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+        .ftt-quote p { margin-bottom: 0.5em; color: inherit; }
+        .ftt-quote p:last-child { margin-bottom: 0; }
+
+        .ftt-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 2em auto;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .ftt-bold, strong { font-weight: 700; color: inherit; }
+        .ftt-italic, em { font-style: italic; color: inherit; }
+
+        .ftt-link, a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            background: none;
+            padding: 0;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease, color 0.2s ease;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .ftt-link:hover, a:hover {
+            border-bottom-color: currentColor;
+        }
+        .ftt-author a {
+            border-bottom: 1px dashed var(--text-secondary);
+            font-weight: inherit;
+        }
+        .ftt-author a:hover {
+            border-bottom-style: solid;
+            color: var(--accent-color);
+        }
+
+
+        .ftt-timestamp, .ftt-author {
+            display: inline-block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-right: 1em;
+        }
+        .ftt-timestamp {
+            font-family: var(--font-mono);
+        }
+        .ftt-author {
+            font-weight: 500;
+        }
+        h1 + div, .ftt-title + div, h2 + div, .ftt-subtitle + div {
+        }
+         div:has(> .ftt-author), div:has(> .ftt-timestamp) {
+             margin-top: -0.5em;
+             margin-bottom: 2em;
+        }
+
+
+        .ftt-raw, pre {
+            display: block;
+            background-color: var(--code-background);
+            border: 1px solid var(--border-subtle);
+            box-shadow: none;
+            padding: 1em 1.5em;
+            margin: 2em 0;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            overflow-x: auto;
+            word-break: break-all;
+            border-radius: var(--border-radius);
+            line-height: 1.6;
+        }
+
+        span[style*="color"] { padding: 0.05em 0.1em; }
+        span[style*="background-color"] {
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        br { content: ""; display: block; margin-bottom: 0.6em; }
+
+    </style>
+</head>
+<body>
+    <div id="ftt-render-output">
+    </div>
+
+    <script type="module">
+        import { FTT } from '../core/ftt.js';
+
+        const fttContent = `[CONFIG](lang){en-US}[/CONFIG] [CONFIG](theme){light}[/CONFIG] [SLUG]flat-text-tags-benefits[/SLUG] [CATEGORY]Tools[/CATEGORY] [KEYWORDS]ftt, flat text tags, parser, content, html, blogging[/KEYWORDS] [TIMESTAMP(2025-04-01T18:00:00Z){MM/dd/yy at hh:mm}] [AUTHOR(Joao Davi S. N.){https://bsky.app/profile/joaodavisn.com}] [BANNER(https://f.feridinha.com/2OsR2.png){FTT Logo}] [H1]Flat Text Tags: Write Once, Share Anywhere[/H1] [H2]A simple syntax with powerful output[/H2] [P]Flat Text Tags (FTT) is a minimal markup system that allows you to structure and format content using clean, consistent tags in plain text. Unlike Markdown or HTML, FTT focuses on being compact, safe, and easy to embed directly into apps, blogs, or even database fields without worrying about rendering issues or breaking syntax.[/P] [P]One of the key advantages of FTT is that it can be written and shared entirely in a single line. Whether you’re embedding a snippet in a JSON file, sending it over an API, or pasting it into a CMS field, the entire content can live in one compact string without sacrificing structure.[/P] [P]FTT supports headings, paragraphs, links, images, raw content, metadata, localization, timestamps, and more — all without external dependencies. Its parser is fast, customizable, and safe to use in client-side and server-side environments.[/P] [P]If you want content that’s readable, portable, and flexible, FTT is a perfect fit for simple blogs, documentation systems, internal tools, or even AI output formatting.[/P] [Q]“Structure is power — and with FTT, it fits in your clipboard.”[/Q]`;
+        document.addEventListener('DOMContentLoaded', () => {
+            const outputDiv = document.getElementById('ftt-render-output');
+            if (!outputDiv) {
+                console.error('FTT Reader Error: Output container #ftt-render-output not found.');
+                return;
+            }
+
+            if (typeof fttContent === 'undefined' || fttContent.trim() === '') {
+                 outputDiv.innerHTML = `<div style="max-width: var(--content-max-width); margin: 0 auto; padding: 2rem 1rem;"><p style="opacity: 0.7;">No FTT content provided.</p></div>`;
+                 return;
+            }
+
+            try {
+                const ftt = new FTT({ enableWarnings: false });
+                const htmlResult = ftt.convertToHtml(fttContent);
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlResult;
+
+                const bannerElement = tempDiv.querySelector('.ftt-banner');
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'ftt-content-wrapper';
+
+                let firstNodeIsBanner = false;
+                if (bannerElement && tempDiv.firstChild === bannerElement) {
+                     firstNodeIsBanner = true;
+                     outputDiv.appendChild(bannerElement);
+                }
+
+                while (tempDiv.firstChild) {
+                     if (firstNodeIsBanner && tempDiv.firstChild === bannerElement) {
+                          tempDiv.removeChild(bannerElement);
+                          continue;
+                     }
+                     if (!firstNodeIsBanner || tempDiv.firstChild !== bannerElement) {
+                         contentWrapper.appendChild(tempDiv.firstChild);
+                     }
+                }
+
+                if (contentWrapper.hasChildNodes()) {
+                    outputDiv.appendChild(contentWrapper);
+                }
+                 else if (bannerElement && !firstNodeIsBanner) {
+                      outputDiv.insertBefore(bannerElement, outputDiv.firstChild);
+                 }
+
+
+            } catch (error) {
+                 outputDiv.innerHTML = `<div class="ftt-content-wrapper"><p style="color: red; font-weight: bold;">Error rendering FTT content.</p></div>`;
+                console.error("FTT Rendering Error:", error);
+            }
+        });
+    </script>
+
+</body>
+</html>

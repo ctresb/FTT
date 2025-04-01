@@ -286,10 +286,9 @@
                         if (!key) return;
                         const value = prompt(`Enter value for ${key}:`, 'value');
                         if (value === null) return;
-                        // Config is defined as paired in the parser
                         prefix = `[CONFIG](${key}){${value}}`;
                         suffix = `[/CONFIG]`;
-                        content = ''; // Config tags typically don't wrap content
+                        content = '';
                         break;
 
                     case 'BR':
@@ -303,25 +302,18 @@
                         return;
                 }
 
-                // Construct the final insertion string
                 fullInsertion = prefix + content + suffix;
 
-                // Insert into textarea
                 textarea.value = textBefore + fullInsertion + textAfter;
                 textarea.focus();
 
-                // Set cursor position
                 if (content && isPaired) {
-                    // Place cursor inside the tags if there was selected text
                     textarea.setSelectionRange(start + prefix.length, start + prefix.length + content.length);
                 } else if (!content && isPaired) {
-                     // Place cursor inside the empty tags
                      textarea.setSelectionRange(start + prefix.length, start + prefix.length);
                 } else if (needsPrompt || isSelfClosingStyle) {
-                    // Place cursor after the inserted tag
                      textarea.setSelectionRange(start + fullInsertion.length, start + fullInsertion.length);
                 } else {
-                    // Default: place cursor after insertion
                     textarea.setSelectionRange(start + fullInsertion.length, start + fullInsertion.length);
                 }
 

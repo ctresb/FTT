@@ -1,4 +1,7 @@
 # FTT (Flat Text Tags)
+
+[![npm version](https://img.shields.io/npm/v/flat-text-tags.svg)](https://www.npmjs.com/package/flat-text-tags)
+
 ![FTT logo](https://f.feridinha.com/2OsR2.png)
 
 FTT is a lightweight JavaScript engine designed to convert a simple, custom plain text markup into styled HTML.

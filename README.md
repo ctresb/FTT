@@ -132,35 +132,37 @@ FTT recognizes the following tags by default. Many of these can be customized vi
 4.  **Convert Text:** Pass your FTT-formatted text string to the `convertToHtml` method.
     ```javascript
     const myFttText = `
-[CONFIG(lang){en}]
-[KEYWORDS]javascript, html, parser, ftt[/KEYWORDS]
-[CATEGORY]Web Development[/CATEGORY]
-[SLUG]my-awesome-post-2024[/SLUG]
+    [CONFIG(lang){en}]
+    [KEYWORDS]javascript, html, parser, ftt[/KEYWORDS]
+    [CATEGORY]Web Development[/CATEGORY]
+    [SLUG]my-awesome-post-2024[/SLUG]
 
-[T]My Awesome Post[/T]
-[AUTHOR(Alice){https://example.com/alice}] - [TIMESTAMP(2024-03-15T10:30:00){yyyy-MM-dd hh:mm}]
+    [T]My Awesome Post[/T]
+    [AUTHOR(Alice){https://example.com/alice}] - [TIMESTAMP(2024-03-15T10:30:00){yyyy-MM-dd hh:mm}]
 
-[P]This is the first paragraph. It supports [B]bold[/B] and [I]italic[/I] text, as well as [LINK(https://example.com){links}].[/P]
+    [P]This is the first paragraph. It supports [B]bold[/B] and [I]italic[/I] text, as well as [LINK(https://example.com){links}].[/P]
 
-[LOC(en)]
-[P]This content is only shown in English.[/P]
-[/LOC]
-[LOC(fr)]
-[P]Ce contenu n'est affiché qu'en français.[/P]
-[/LOC]
+    [P]
+    [LOC(en)]
+    This content is only shown in English.
+    [/LOC]
+    [LOC(fr)]
+    Ce contenu n'est affiché qu'en français.
+    [/LOC]
+    [/P]
 
-[BANNER(path/to/banner.jpg){Post Banner}]
+    [BANNER(path/to/banner.jpg){Post Banner}]
 
-[S]Features[/S]
-[P]Including images: [IMG(path/to/image.jpg){A descriptive alt text}] and quotes:[/P]
-[Q]This is a blockquote.[/Q]
-[P]You can add [COLOR(#ff0000)]red text[/COLOR] or [COLOR(blue, yellow)]blue text on yellow background[/COLOR].[/P]
-[BR/]
-[P]Use RAW to show code safely:[/P]
-[RAW][P]This paragraph tag [B]will not[/B] be converted.[/P]
-function hello() {
-  console.log("Hi!");
-}[/RAW]`;
+    [S]Features[/S]
+    [P]Including images: [IMG(path/to/image.jpg){A descriptive alt text}] and quotes:[/P]
+    [Q]This is a blockquote.[/Q]
+    [P]You can add [COLOR(#ff0000)]red text[/COLOR] or [COLOR(blue, yellow)]blue text on yellow background[/COLOR].[/P]
+    [BR/]
+    [P]Use RAW to show code safely:[/P]
+    [RAW][P]This paragraph tag [B]will not[/B] be converted.[/P]
+    function hello() {
+    console.log("Hi!");
+    }[/RAW]`;
 
     const ftt = new FTT(); // Or use customFtt if configured
     const generatedHtml = ftt.convertToHtml(myFttText);

@@ -303,7 +303,7 @@ Contributions (bug reports, feature requests, pull requests) are welcome! Please
 MIT License. See the LICENSE file for details.
 
 <p align="center">
-  <a href="https://c3b.fun/r/FTT" aria-label="C3B">
-    <img src="https://img.shields.io/badge/C3B-feito%20por%20ctresb-ff5f7e?style=for-the-badge" alt="C3B" />
+  <a href="https://feitonobrasil.dev.br" aria-label="Feito no Brasil">
+    <img src="https://selo.feitonobrasil.dev.br/pt-br/colorido/1x.svg" alt="Feito no Brasil" width="250" height="120" loading="lazy" />
   </a>
 </p>
